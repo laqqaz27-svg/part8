@@ -125,6 +125,12 @@ type Mutation {
     published: Int!
     genres: [String!]!
   ): Book!
+
+  editAuthor(
+    name: String!
+    setBornTo: Int!
+  ): Author
+
 }
 `
 
@@ -158,9 +164,8 @@ const resolvers = {
       return books.filter(book => book.author === root.name).length
     }
   },
-    Mutation: {
+   Mutation: {
   addBook: (root, args) => {
-
     const authorExists = authors.find(
       author => author.name === args.author
     )
@@ -178,6 +183,20 @@ const resolvers = {
     books = books.concat(newBook)
 
     return newBook
+  },
+
+  editAuthor: (root, args) => {
+    const author = authors.find(
+      author => author.name === args.name
+    )
+
+    if (!author) {
+      return null
+    }
+
+    author.born = args.setBornTo
+
+    return author
   }
 }
 }
