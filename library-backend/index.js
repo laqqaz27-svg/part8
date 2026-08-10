@@ -114,10 +114,21 @@ const typeDefs = `
 type Query {
   bookCount: Int!
   authorCount: Int!
- allBooks(author: String, genre: String): [Book!]!
+  allBooks(author: String, genre: String): [Book!]!
   allAuthors: [Author!]!
 }
+
+type Mutation {
+  addBook(
+    title: String!
+    author: String!
+    published: Int!
+    genres: [String!]!
+  ): Book!
+}
 `
+
+
 const resolvers = {
   Query: {
     bookCount: () => books.length,
@@ -146,7 +157,29 @@ const resolvers = {
     bookCount: (root) => {
       return books.filter(book => book.author === root.name).length
     }
+  },
+    Mutation: {
+  addBook: (root, args) => {
+
+    const authorExists = authors.find(
+      author => author.name === args.author
+    )
+
+    if (!authorExists) {
+      authors = authors.concat({
+        name: args.author
+      })
+    }
+
+    const newBook = {
+      ...args
+    }
+
+    books = books.concat(newBook)
+
+    return newBook
   }
+}
 }
 
 const server = new ApolloServer({
