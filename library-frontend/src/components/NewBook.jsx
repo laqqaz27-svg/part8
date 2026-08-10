@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useMutation } from '@apollo/client/react'
+import { ADD_BOOK, ALL_BOOKS, ALL_AUTHORS } from '../queries'
 
 const NewBook = (props) => {
   const [title, setTitle] = useState('')
@@ -7,6 +9,13 @@ const NewBook = (props) => {
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
 
+  const [addBook] = useMutation(ADD_BOOK, {
+    refetchQueries: [
+      { query: ALL_BOOKS },
+      { query: ALL_AUTHORS },
+    ],
+  })
+
   if (!props.show) {
     return null
   }
@@ -14,7 +23,14 @@ const NewBook = (props) => {
   const submit = async (event) => {
     event.preventDefault()
 
-    console.log('add book...')
+    await addBook({
+      variables: {
+        title,
+        author,
+        published: Number(published),
+        genres,
+      },
+    })
 
     setTitle('')
     setPublished('')
@@ -29,43 +45,54 @@ const NewBook = (props) => {
   }
 
   return (
-    <div>
-      <form onSubmit={submit}>
-        <div>
+    <form onSubmit={submit}>
+      <div>
+        <label>
           title
           <input
             value={title}
             onChange={({ target }) => setTitle(target.value)}
           />
-        </div>
-        <div>
+        </label>
+      </div>
+
+      <div>
+        <label>
           author
           <input
             value={author}
             onChange={({ target }) => setAuthor(target.value)}
           />
-        </div>
-        <div>
+        </label>
+      </div>
+
+      <div>
+        <label>
           published
           <input
             type="number"
             value={published}
             onChange={({ target }) => setPublished(target.value)}
           />
-        </div>
-        <div>
+        </label>
+      </div>
+
+      <div>
+        <label>
+          genre
           <input
             value={genre}
             onChange={({ target }) => setGenre(target.value)}
           />
-          <button onClick={addGenre} type="button">
-            add genre
-          </button>
-        </div>
-        <div>genres: {genres.join(' ')}</div>
-        <button type="submit">create book</button>
-      </form>
-    </div>
+        </label>
+
+        <button type="button" onClick={addGenre}>
+          add genre
+        </button>
+      </div>
+
+      <button type="submit">add book</button>
+    </form>
   )
 }
 
