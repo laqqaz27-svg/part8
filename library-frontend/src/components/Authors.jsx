@@ -1,22 +1,31 @@
-import { useQuery } from '@apollo/client/react'
-import { ALL_AUTHORS } from '../queries'
+import { useState } from 'react'
+import { useMutation } from '@apollo/client/react'
+import { EDIT_AUTHOR, ALL_AUTHORS } from '../queries'
 
-const Authors = ({ show }) => {
-  const result = useQuery(ALL_AUTHORS)
+const Authors = ({ show, authors }) => {
+  const [name, setName] = useState(authors[0]?.name ?? '')
+  const [born, setBorn] = useState('')
+
+  const [editAuthor] = useMutation(EDIT_AUTHOR, {
+    refetchQueries: [{ query: ALL_AUTHORS }],
+  })
 
   if (!show) {
     return null
   }
 
-  if (result.loading) {
-    return <div>loading...</div>
-  }
+  const submit = async (event) => {
+    event.preventDefault()
 
-  if (result.error) {
-    return <div>Error: {result.error.message}</div>
-  }
+    await editAuthor({
+      variables: {
+        name,
+        setBornTo: Number(born),
+      },
+    })
 
-  const authors = result.data.allAuthors
+    setBorn('')
+  }
 
   return (
     <div>
@@ -25,7 +34,7 @@ const Authors = ({ show }) => {
       <table>
         <tbody>
           <tr>
-            <th>name</th>
+            <th></th>
             <th>born</th>
             <th>books</th>
           </tr>
@@ -39,6 +48,37 @@ const Authors = ({ show }) => {
           ))}
         </tbody>
       </table>
+
+      <h2>Set birthyear</h2>
+
+      <form onSubmit={submit}>
+        <div>
+          name
+          <select
+            value={name}
+            onChange={({ target }) => setName(target.value)}
+          >
+            {authors.map((author) => (
+              <option key={author.name} value={author.name}>
+                {author.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          born
+          <input
+            type="number"
+            value={born}
+            onChange={({ target }) => setBorn(target.value)}
+          />
+        </div>
+
+        <button type="submit">
+          update author
+        </button>
+      </form>
     </div>
   )
 }
