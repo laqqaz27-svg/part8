@@ -3,6 +3,7 @@ const {
 } = require('../library-backend/node_modules/@apollo/server')
 const { MongoMemoryServer } = require('mongodb-memory-server')
 const mongoose = require('../library-backend/node_modules/mongoose')
+const bcrypt = require('../library-backend/node_modules/bcryptjs')
 
 const typeDefs = require('../library-backend/schema')
 const resolvers = require('../library-backend/resolvers')
@@ -89,7 +90,7 @@ const seedDatabase = async () => {
     const book = new Book({
       title: bookData.title,
       published: bookData.published,
-      author: author._id,
+      author: bookData.authorName,
       genres: bookData.genres,
     })
     await book.save()
@@ -100,7 +101,8 @@ const createTestUser = async (
   username = 'testuser',
   favoriteGenre = 'refactoring',
 ) => {
-  const user = new User({ username, favoriteGenre })
+  const passwordHash = await bcrypt.hash('secret', 10)
+  const user = new User({ username, favoriteGenre, passwordHash })
   await user.save()
   return user
 }

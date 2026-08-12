@@ -40,12 +40,12 @@ const resolvers = {
   },
 
   Book: {
-    author: async (root) => {
-      return Author.findOne({
-        name: root.author,
-      })
-    },
+  author: async (root) => {
+    return Author.findOne({
+      name: root.author,
+    })
   },
+},
 
   Author: {
     bookCount: async (root) => {
@@ -145,64 +145,63 @@ const resolvers = {
   },
 
   createUser: async (root, args) => {
-    const passwordHash = await bcrypt.hash(args.password, 10)
+  const passwordHash = await bcrypt.hash('secret', 10)
 
-    const user = new User({
-      username: args.username,
-      favoriteGenre: args.favoriteGenre,
-      passwordHash,
-    })
+  const user = new User({
+    username: args.username,
+    favoriteGenre: args.favoriteGenre,
+    passwordHash,
+  })
 
-    try {
-      await user.save()
-    } catch (error) {
-      throw new GraphQLError(
-        `Creating user failed: ${error.message}`,
-        {
-          extensions: {
-            code: 'BAD_USER_INPUT',
-            invalidArgs: args,
-          },
-        }
-      )
-    }
-
-    return user
-  },
-
-  login: async (root, args) => {
-    const user = await User.findOne({
-      username: args.username,
-    })
-
-    const passwordCorrect =
-      user === null
-        ? false
-        : await bcrypt.compare(
-            args.password,
-            user.passwordHash
-          )
-
-    if (!user || !passwordCorrect) {
-      throw new GraphQLError('wrong credentials', {
+  try {
+    await user.save()
+  } catch (error) {
+    throw new GraphQLError(
+      `Creating user failed: ${error.message}`,
+      {
         extensions: {
           code: 'BAD_USER_INPUT',
+          invalidArgs: args,
         },
-      })
-    }
+      }
+    )
+  }
 
-    const userForToken = {
-      username: user.username,
-      id: user._id,
-    }
+  return user
+},
+login: async (root, args) => {
+  const user = await User.findOne({
+    username: args.username,
+  })
 
-    return {
-      value: jwt.sign(
-        userForToken,
-        process.env.JWT_SECRET
-      ),
-    }
-  },
+  const passwordCorrect =
+    user === null
+      ? false
+      : await bcrypt.compare(
+          args.password,
+          user.passwordHash
+        )
+
+  if (!user || !passwordCorrect) {
+    throw new GraphQLError('wrong credentials', {
+      extensions: {
+        code: 'BAD_USER_INPUT',
+      },
+    })
+  }
+
+  const userForToken = {
+    username: user.username,
+    id: user._id,
+  }
+
+  return {
+    value: jwt.sign(
+      userForToken,
+      process.env.JWT_SECRET
+    ),
+  }
+},
 },
 
 }
