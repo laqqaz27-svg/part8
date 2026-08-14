@@ -11,19 +11,17 @@ export const ALL_AUTHORS = Apollo.gql`
 `
 
 export const ALL_BOOKS = Apollo.gql`
-query {
-  allBooks {
-    title
-    author {
-      name
-      born
-      bookCount
+  query allBooks($genre: String) {
+    allBooks(genre: $genre) {
+      title
+      author {
+        name
+      }
+      published
+      genres
+      id
     }
-    published
-    genres
-    id
   }
-}
 `
 
 export const ADD_BOOK = Apollo.gql`
@@ -45,6 +43,14 @@ export const ADD_BOOK = Apollo.gql`
       }
       published
       genres
+    }
+  }
+`
+export const ME = Apollo.gql`
+  query {
+    me {
+      username
+      favoriteGenre
     }
   }
 `
