@@ -1,17 +1,41 @@
 import { useState } from 'react'
-import { useQuery } from '@apollo/client/react'
+import { useApolloClient, useQuery } from '@apollo/client/react'
 
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
+import Login from './views/Login'
 
 import { ALL_AUTHORS, ALL_BOOKS } from './queries'
 
 const App = () => {
   const [page, setPage] = useState('authors')
 
+  const [token, setToken] = useState(
+    localStorage.getItem('phonebook-user-token')
+  )
+
+  const [errorMessage, setErrorMessage] = useState(null)
+
+  const client = useApolloClient()
+
   const authorsResult = useQuery(ALL_AUTHORS)
   const booksResult = useQuery(ALL_BOOKS)
+
+  const notify = (message) => {
+    setErrorMessage(message)
+
+    setTimeout(() => {
+      setErrorMessage(null)
+    }, 5000)
+  }
+
+  const logout = () => {
+    setToken(null)
+    localStorage.clear()
+    client.resetStore()
+    setPage('authors')
+  }
 
   if (authorsResult.loading || booksResult.loading) {
     return <div>loading...</div>
@@ -36,14 +60,33 @@ const App = () => {
           books
         </button>
 
-        <button onClick={() => setPage('add')}>
-          add book
-        </button>
+        {!token ? (
+          <button onClick={() => setPage('login')}>
+            login
+          </button>
+        ) : (
+          <>
+            <button onClick={() => setPage('add')}>
+              add book
+            </button>
+
+            <button onClick={logout}>
+              logout
+            </button>
+          </>
+        )}
       </div>
+
+      {errorMessage && (
+        <div style={{ color: 'red' }}>
+          {errorMessage}
+        </div>
+      )}
 
       <Authors
         show={page === 'authors'}
         authors={authorsResult.data.allAuthors}
+        token={token}
       />
 
       <Books
@@ -51,7 +94,16 @@ const App = () => {
         books={booksResult.data.allBooks}
       />
 
-      <NewBook show={page === 'add'} />
+      {page === 'add' && token && (
+        <NewBook show={true} />
+      )}
+
+      {page === 'login' && !token && (
+        <Login
+          setError={notify}
+          setToken={setToken}
+        />
+      )}
     </div>
   )
 }
