@@ -32,9 +32,29 @@ const resolvers = {
       return Book.find(query)
     },
 
-    allAuthors: async () => {
-      return Author.find({})
+   allAuthors: async () => {
+  const authors = await Author.find({})
+
+  const bookCounts = await Book.aggregate([
+    {
+      $group: {
+        _id: '$author',
+        count: { $sum: 1 },
+      },
     },
+  ])
+
+  const counts = {}
+
+  bookCounts.forEach(item => {
+    counts[item._id] = item.count
+  })
+
+  return authors.map(author => ({
+    ...author.toObject(),
+    bookCount: counts[author.name] || 0,
+  }))
+  },
 
     me: (root, args, context) => {
       return context.currentUser
@@ -50,12 +70,8 @@ const resolvers = {
 },
 
   Author: {
-    bookCount: async (root) => {
-      return Book.countDocuments({
-        author: root.name,
-      })
-    },
-  },
+  bookCount: (root) => root.bookCount,
+},
 
  Mutation: {
   addBook: async (root, args, context) => {
