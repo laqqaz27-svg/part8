@@ -52,38 +52,35 @@ const App = () => {
 
   return (
     <div>
-      <div>
-        <button onClick={() => setPage('authors')}>
-          authors
-        </button>
+     <div>
+  <button onClick={() => setPage('authors')}>
+    authors
+  </button>
 
-        <button onClick={() => setPage('books')}>
-          books
-        </button>
+  <button onClick={() => setPage('books')}>
+    books
+  </button>
 
-        {!token ? (
-          <button onClick={() => setPage('login')}>
-            login
-          </button>
-        ) : (
-          <>
-            <button onClick={() => setPage('add')}>
-              add book
-            </button>
-
-        {token && (
-            <button onClick={() => setPage('recommendations')}>
-           recommend
+  {!token ? (
+    <button onClick={() => setPage('login')}>
+      login
+    </button>
+  ) : (
+    <>
+      <button onClick={() => setPage('add')}>
+        add book
       </button>
-       )}
 
-            <button onClick={logout}>
-              logout
-            </button>
-          </>
-        )}
-      </div>
+      <button onClick={() => setPage('recommendations')}>
+        recommend
+      </button>
 
+      <button onClick={logout}>
+        logout
+      </button>
+    </>
+  )}
+  </div>
       {errorMessage && (
         <div style={{ color: 'red' }}>
           {errorMessage}
@@ -91,30 +88,27 @@ const App = () => {
       )}
 
       <Authors
-        show={page === 'authors'}
-        authors={authorsResult.data.allAuthors}
-        token={token}
-      />
+  show={page === 'authors'}
+  authors={authorsResult.data.allAuthors}
+  token={token}
+ />
 
-      <Books
-        show={page === 'books'}
-        books={booksResult.data.allBooks}
-      />
+  <Books show={page === 'books'} />
 
-     <Recommendations
-       show={page === 'recommendations'}
-      />
+ <Recommendations
+  show={page === 'recommendations'}
+  />
 
-      {page === 'add' && token && (
-        <NewBook show={true} />
-      )}
+  {page === 'add' && token && (
+  <NewBook show={true} />
+  )}
 
-      {page === 'login' && !token && (
-        <Login
-          setError={notify}
-          setToken={setToken}
-        />
-      )}
+  {page === 'login' && !token && (
+  <Login
+    setError={notify}
+    setToken={setToken}
+  />
+  )}
     </div>
   )
 }

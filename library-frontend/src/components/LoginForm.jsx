@@ -17,12 +17,13 @@ const LoginForm = ({ setError, setToken }) => {
         token
       )
     },
-    onError: (error) => {
-      setError(error.message)
+
+    onError: () => {
+      setError('login failed')
     },
   })
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault()
 
     login({
@@ -35,21 +36,35 @@ const LoginForm = ({ setError, setToken }) => {
 
   return (
     <div>
+      <h2>login</h2>
+
       <form onSubmit={submit}>
         <div>
-          username
+          <label htmlFor="username">
+            username
+          </label>
+
           <input
+            id="username"
             value={username}
-            onChange={({ target }) => setUsername(target.value)}
+            onChange={({ target }) =>
+              setUsername(target.value)
+            }
           />
         </div>
 
         <div>
-          password
+          <label htmlFor="password">
+            password
+          </label>
+
           <input
+            id="password"
             type="password"
             value={password}
-            onChange={({ target }) => setPassword(target.value)}
+            onChange={({ target }) =>
+              setPassword(target.value)
+            }
           />
         </div>
 

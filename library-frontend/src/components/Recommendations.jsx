@@ -1,8 +1,20 @@
 import { useQuery } from '@apollo/client/react'
-import { ALL_BOOKS, ME } from '../queries'
+
+import { ME, ALL_BOOKS } from '../queries'
 
 const Recommendations = ({ show }) => {
-  const meResult = useQuery(ME)
+  const meResult = useQuery(ME, {
+    skip: !show,
+  })
+
+  const favoriteGenre = meResult.data?.me?.favoriteGenre
+
+  const booksResult = useQuery(ALL_BOOKS, {
+    variables: {
+      genre: favoriteGenre,
+    },
+    skip: !show || !favoriteGenre,
+  })
 
   if (!show) {
     return null
@@ -16,46 +28,32 @@ const Recommendations = ({ show }) => {
     return <div>Error: {meResult.error.message}</div>
   }
 
-  if (!meResult.data.me) {
-    return <div>user not logged in</div>
+  if (!favoriteGenre) {
+    return <div>No favorite genre found</div>
   }
 
-  const favoriteGenre = meResult.data.me.favoriteGenre
-
-  return (
-    <RecommendationBooks genre={favoriteGenre} />
-  )
-}
-
-const RecommendationBooks = ({ genre }) => {
-  const result = useQuery(ALL_BOOKS, {
-    variables: {
-      genre,
-    },
-  })
-
-  if (result.loading) {
+  if (booksResult.loading) {
     return <div>loading...</div>
   }
 
-  if (result.error) {
-    return <div>Error: {result.error.message}</div>
+  if (booksResult.error) {
+    return <div>Error: {booksResult.error.message}</div>
   }
 
-  const books = result.data.allBooks
+  const books = booksResult.data.allBooks
 
   return (
     <div>
       <h2>recommendations</h2>
 
       <p>
-        books in your favorite genre <b>{genre}</b>
+        books in your favorite genre <strong>{favoriteGenre}</strong>
       </p>
 
       <table>
         <tbody>
           <tr>
-            <th></th>
+            <th>title</th>
             <th>author</th>
             <th>published</th>
           </tr>
